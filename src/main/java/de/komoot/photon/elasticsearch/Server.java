@@ -7,7 +7,9 @@ import org.apache.commons.lang3.SystemUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+
+import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
@@ -91,9 +93,9 @@ public class Server {
                 if (index >= 0) {
                     int port = Integer.parseInt(tAddr.substring(index + 1));
                     String addrStr = tAddr.substring(0, index);
-                    trClient.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(addrStr, port)));
+                    trClient.addTransportAddress(new TransportAddress(new InetSocketAddress(addrStr, port)));
                 } else {
-                    trClient.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(tAddr, 9300)));
+                    trClient.addTransportAddress(new TransportAddress(new InetSocketAddress(tAddr, 9300)));
                 }
             }
 
@@ -190,7 +192,7 @@ public class Server {
 
         // add all langs to the mapping
         mappingsJSON = addLangsToMapping(mappingsJSON);
-        client.admin().indices().prepareCreate("photon").setSettings(IOUtils.toString(index_settings)).execute()
+        client.admin().indices().prepareCreate("photon").setSettings(IOUtils.toString(index_settings), XContentType.JSON).execute()
                 .actionGet();
         client.admin().indices().preparePutMapping("photon").setType("place").setSource(mappingsJSON.toString())
                 .execute().actionGet();
